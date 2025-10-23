@@ -1,57 +1,187 @@
-<!DOCTYPE html>
+[
+  {
+  <!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Manufacturers Finder</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background: #f5f5f5;
-      padding: 40px;
-      color: #333;
+    :root {
+      --bg:#f5f7fb; --card:#fff; --text:#222; --muted:#667085;
+      --primary:#0a58ca; --border:#e6e8ef; --chip:#eef2ff;
     }
-    h1 {
-      color: #222;
-    }
-    input, select, button {
-      padding: 10px;
-      margin: 10px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-      font-size: 16px;
-    }
-    button {
-      background-color: #007bff;
-      color: white;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
-    .container {
-      max-width: 500px;
-      margin: auto;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    .wrap{max-width:880px;margin:56px auto;padding:24px}
+    .panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:28px;box-shadow:0 6px 24px rgba(16,24,40,.06)}
+    h1{margin:0 0 8px;font-size:40px;line-height:1.1}
+    .sub{color:var(--muted);margin:0 0 24px;font-size:18px}
+    .row{display:grid;grid-template-columns:1fr 260px auto;gap:12px;align-items:center}
+    input,select{width:100%;padding:14px 14px;border:1px solid var(--border);border-radius:10px;font-size:16px;background:#fff}
+    button{background:var(--primary);color:#fff;border:none;border-radius:10px;padding:14px 22px;font-weight:600;cursor:pointer}
+    button:disabled{opacity:.6;cursor:not-allowed}
+    .results{margin-top:22px;display:grid;gap:12px}
+    .card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;justify-content:space-between;align-items:start;gap:12px}
+    .title{font-weight:700}
+    .meta{color:var(--muted);font-size:14px}
+    .tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+    .chip{background:var(--chip);color:#3b46a8;padding:4px 8px;border-radius:999px;font-size:12px}
+    .actions a{display:inline-block;margin-left:10px;color:var(--primary);text-decoration:none;font-weight:600}
+    .empty{padding:18px;color:var(--muted)}
+    .count{color:var(--muted);font-size:14px;margin-top:8px}
+    @media (max-width:720px){ .row{grid-template-columns:1fr} }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Manufacturers Finder</h1>
-    <p>This site will help you find manufacturers by category and country.</p>
-    <input type="text" placeholder="Enter product name..." />
-    <select>
-      <option value="">Select Country</option>
-      <option value="usa">United States</option>
-      <option value="china">China</option>
-      <option value="germany">Germany</option>
-    </select>
-    <button>Search</button>
+  <div class="wrap">
+    <div class="panel">
+      <h1>Manufacturers<br/>Finder</h1>
+      <p class="sub">This site will help you find manufacturers by <b>category</b> and <b>country</b>.</p>
+
+      <div class="row" role="search">
+        <input id="query" type="text" placeholder="e.g. plastics, textiles, electronics, furniture…" aria-label="Category or keyword" />
+        <select id="countrySelect" aria-label="Country">
+          <!-- If you also create data/countries.json the script will auto-fill this list.
+               Otherwise these defaults stay. -->
+          <option value="">All countries</option>
+          <option>United States</option>
+          <option>United Kingdom</option>
+          <option>Germany</option>
+          <option>India</option>
+          <option>Japan</option>
+          <option>Australia</option>
+          <option>Brazil</option>
+          <option>UAE</option>
+          <option>Kenya</option>
+          <option>Sweden</option>
+        </select>
+        <button id="searchBtn">Search</button>
+      </div>
+
+      <div class="count" id="count"></div>
+      <div class="results" id="results"></div>
+    </div>
   </div>
+
+  <script>
+    // === Config: where your dataset(s) live in the repo ===
+    const DATA_URL = 'data/manufacturers.json';      // you already created this file
+    const COUNTRIES_URL = 'data/countries.json';     // optional; if present, fills the dropdown
+
+    // --- helpers ---
+    const $ = (sel) => document.querySelector(sel);
+    const normalize = (s='') => s.toString().toLowerCase().trim();
+
+    let cache = null;
+
+    async function loadManufacturers() {
+      if (cache) return cache;
+      const res = await fetch(DATA_URL, { cache: 'no-store' });
+      if (!res.ok) throw new Error('Failed to load manufacturers.json');
+      cache = await res.json();
+      return cache;
+    }
+
+    async function maybeLoadCountries() {
+      try {
+        const res = await fetch(COUNTRIES_URL, { cache: 'no-store' });
+        if (!res.ok) return; // file not present? just keep defaults
+        const countries = await res.json();
+        const sel = $('#countrySelect');
+        // keep first option (All countries), replace rest:
+        sel.querySelectorAll('option:not(:first-child)').forEach(o => o.remove());
+        countries.forEach(c => {
+          const opt = document.createElement('option');
+          opt.textContent = c;
+          sel.appendChild(opt);
+        });
+      } catch (_) { /* ignore */ }
+    }
+
+    function filterData(data, query, country) {
+      const q = normalize(query);
+      const c = normalize(country);
+      return data.filter(item => {
+        const company = normalize(item.company);
+        const category = normalize(item.category);
+        const country = normalize(item.country);
+        const matchesQuery = !q || company.includes(q) || category.includes(q);
+        const matchesCountry = !c || country === c;
+        return matchesQuery && matchesCountry;
+      });
+    }
+
+    function render(list) {
+      const wrap = $('#results');
+      const count = $('#count');
+      wrap.innerHTML = '';
+      count.textContent = list.length
+        ? `Showing ${list.length} result${list.length>1?'s':''}`
+        : 'No results yet — try a broader keyword or choose “All countries”.';
+
+      if (!list.length) {
+        const p = document.createElement('div');
+        p.className = 'empty';
+        p.textContent = 'Nothing matched your filters.';
+        wrap.appendChild(p);
+        return;
+      }
+
+      list.slice(0, 200).forEach(row => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div>
+            <div class="title">${escapeHtml(row.company || 'Unknown')}</div>
+            <div class="meta">${escapeHtml(row.country || '')}</div>
+            <div class="tags">
+              <span class="chip">${escapeHtml(row.category || 'Manufacturer')}</span>
+            </div>
+          </div>
+          <div class="actions">
+            ${row.phone ? `<a href="tel:${encodeURIComponent(row.phone)}">Call</a>` : ''}
+            ${row.email ? `<a href="mailto:${encodeURIComponent(row.email)}">Email</a>` : ''}
+            ${row.website ? `<a href="${row.website}" target="_blank" rel="noopener">Website ↗</a>` : ''}
+          </div>`;
+        wrap.appendChild(card);
+      });
+    }
+
+    function escapeHtml(s='') {
+      return s.replace(/[&<>"']/g, ch =>
+        ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])
+      );
+    }
+
+    async function runSearch() {
+      const btn = $('#searchBtn');
+      btn.disabled = true;
+      btn.textContent = 'Searching…';
+      try {
+        const data = await loadManufacturers();
+        const q = $('#query').value;
+        const c = $('#countrySelect').value;
+        const out = filterData(data, q, c);
+        render(out);
+      } catch (e) {
+        $('#results').innerHTML = `<div class="empty">Error: ${e.message}</div>`;
+        $('#count').textContent = '';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Search';
+      }
+    }
+
+    // events
+    $('#searchBtn').addEventListener('click', runSearch);
+    $('#query').addEventListener('keydown', e => { if (e.key === 'Enter') runSearch(); });
+    $('#countrySelect').addEventListener('change', runSearch);
+
+    // boot
+    maybeLoadCountries(); // optional
+    // Optionally perform an initial search so the page isn’t blank:
+    runSearch();
+  </script>
 </body>
 </html>
