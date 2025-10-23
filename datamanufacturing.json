@@ -1,0 +1,82 @@
+[
+  {
+    "company": "Global Plastics Ltd",
+    "category": "Plastics",
+    "country": "United States",
+    "email": "info@globalplastics.com",
+    "phone": "+1 212-555-9832",
+    "website": "https://globalplastics.com"
+  },
+  {
+    "company": "Euro Steelworks GmbH",
+    "category": "Metals",
+    "country": "Germany",
+    "email": "contact@eurosteelworks.de",
+    "phone": "+49 30 4567 2334",
+    "website": "https://eurosteelworks.de"
+  },
+  {
+    "company": "Asia Textiles Co.",
+    "category": "Textiles",
+    "country": "India",
+    "email": "sales@asiatextiles.in",
+    "phone": "+91 22 4455 6677",
+    "website": "https://asiatextiles.in"
+  },
+  {
+    "company": "Nordic Machinery AB",
+    "category": "Machinery",
+    "country": "Sweden",
+    "email": "support@nordicmachinery.se",
+    "phone": "+46 8 778 4455",
+    "website": "https://nordicmachinery.se"
+  },
+  {
+    "company": "GreenChem Solutions",
+    "category": "Chemicals",
+    "country": "United Kingdom",
+    "email": "info@greenchem.co.uk",
+    "phone": "+44 20 9987 1234",
+    "website": "https://greenchem.co.uk"
+  },
+  {
+    "company": "Pacific Electronics Corp",
+    "category": "Electronics",
+    "country": "Japan",
+    "email": "info@pacificelectronics.jp",
+    "phone": "+81 3 9876 1234",
+    "website": "https://pacificelectronics.jp"
+  },
+  {
+    "company": "LatAm AutoParts",
+    "category": "Automotive",
+    "country": "Brazil",
+    "email": "contact@latamautoparts.com.br",
+    "phone": "+55 11 9988 7766",
+    "website": "https://latamautoparts.com.br"
+  },
+  {
+    "company": "Aussie Furniture Makers",
+    "category": "Furniture",
+    "country": "Australia",
+    "email": "sales@aussiefurniture.com.au",
+    "phone": "+61 3 9876 3322",
+    "website": "https://aussiefurniture.com.au"
+  },
+  {
+    "company": "MiddleEast Construction Group",
+    "category": "Construction",
+    "country": "UAE",
+    "email": "info@meconstruction.ae",
+    "phone": "+971 4 556 3344",
+    "website": "https://meconstruction.ae"
+  },
+  {
+    "company": "Africa AgroTech Ltd",
+    "category": "Agriculture",
+    "country": "Kenya",
+    "email": "hello@africaagrotech.co.ke",
+    "phone": "+254 20 778899",
+    "website": "https://africaagrotech.co.ke"
+  }
+]
